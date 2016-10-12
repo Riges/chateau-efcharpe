@@ -122,10 +122,14 @@ let learnAlcoholStump alcoholLevel =
         |> Seq.averageBy (fun wine -> wine.Quality)
     // average quality for wines with alcohol > level
     let valueIfHigh =
-        failwith "[TODO]"
+        redWines
+        |> Seq.filter (fun wine -> wine.Alcohol >  alcoholLevel)
+        |> Seq.averageBy (fun wine -> wine.Quality)
     // create a stump
     let predictor (wine:Wine) =
-        failwith "[TODO]"
+        if wine.Alcohol <= alcoholLevel
+        then valueIfLow
+        else valueIfHigh
     // return the stump
     predictor
 
@@ -151,8 +155,8 @@ let maxAlcohol =
 // [TODO] alcohol level is between 8.4 and 14.9; let's try 
 // to learn stumps for alcohol level s of 10.0 and 12.0.
 
-let alcoholStump1 = failwith "[TODO]"
-let alcoholStump2 = failwith "[TODO]"
+let alcoholStump1 = learnAlcoholStump 10.0
+let alcoholStump2 = learnAlcoholStump 12.0
 
 
 // See what's happening on a plot 
@@ -222,9 +226,13 @@ redWines
 // alcoholStump1
 // alcoholStump2
 // hint: Seq.averageBy could be useful
-let cost0 = failwith "[TODO]"
-let cost1 = failwith "[TODO]"
-let cost2 = failwith "[TODO]"
+
+let costs (wines:Wine seq) predictor =
+    wines |> Seq.averageBy(fun wine -> abs(pown(wine.Quality - (predictor wine)) 2))
+
+let cost0 = costs redWines veryBasicPredictor
+let cost1 = costs redWines alcoholStump1
+let cost2 = costs redWines alcoholStump2
 
 // what is our best model so far?
 
@@ -253,8 +261,8 @@ let levels =
 // hint: Seq.minBy could be useful here
 let bestStump =
     levels
-    |> Seq.map (fun level -> failwith "[TODO]")
-    |> Seq.minBy (fun stump -> failwith "[TODO]")
+    |> Seq.map learnAlcoholStump
+    |> Seq.minBy (fun stump -> costs redWines stump)
 
 // how does the cost compare to previous models?        
 let bestCost = 

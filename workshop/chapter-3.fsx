@@ -123,10 +123,10 @@ let ``alcohol over/under 11.5`` =
         |> Seq.map (fun wine -> wine,wine.Quality)
     // we learn, using a feature and a level
     // [TODO] learn stump for alcohol, level 11.5
-    let stump = failwith "[TODO]"
+    let stump = learnStump sample (fun wine -> wine.Alcohol) 11.5
     // we compute the cost
     // [TODO] compute the stump cost
-    let stumpCost = failwith "[TODO]"
+    let stumpCost = cost sample stump
     printfn "Quality of model: %.3f" stumpCost
 
 
@@ -137,9 +137,9 @@ let levels (sample:Example seq) (feature:Feature) (n:int) =
     let featureValues = 
         sample 
         |> Seq.map (fun (wine,value) -> feature wine)
-    let min = failwith "[TODO]"
-    let max = failwith "[TODO]"
-    let step = failwith "[TODO]"
+    let min = featureValues |> Seq.min
+    let max = featureValues |> Seq.max
+    let step = (max - min) / (float n)
     [ min + step.. step .. max - step ]
 
 
@@ -185,12 +185,14 @@ let learn
             let residualsSample = 
                 sample
                 |> Seq.map (fun (wine,quality) -> 
-                    failwith "[TODO]")
+                    wine, wine.Quality - predictor wine)
 
             // [TODO] Learn a Stump for each feature level,
             // and find the stump with the best cost.
             let bestResidualStump =
-                failwith "[TODO]"
+                featuresLevels
+                    |> Seq.map(fun(feature, level) -> learnStump residualsSample feature level)
+                    |> Seq.minBy(fun stump -> cost residualsSample stump)
             // We combine old predictor with the best stump,   
             let bestPredictor (wine:Observation) = 
                 predictor wine + bestResidualStump wine
@@ -242,13 +244,22 @@ let sample =
 // with 10 levels, and a search depth of 5. 
 let grid = 10
 let depth = 5
-let model = failwith "[TODO]"
+let model = learn sample features grid depth
 printfn "Cost: %.3f" (cost sample model)
 
 
 // [TODO] Visualize actual vs predicted wine quality
 // on a Scatter Chart.
 
+redWines
+|> Seq.map (fun wine -> 
+    wine.Quality, model wine)
+|> Chart.Scatter
+|> Chart.WithOptions options
+|> Chart.WithTitle "Quality vs. Model"
+|> Chart.WithXTitle "Quality"
+|> Chart.WithYTitle "Model"
+|> Chart.Show
 
 
 (*
@@ -265,7 +276,9 @@ should decrease as we search deeper and deeper.
 // depth? 
 [ 1 .. 10 ]
 |> List.map (fun depth -> 
-    failwith "[TODO]")
+    let f = learn sample features grid depth
+    cost sample f 
+    )
 |> Chart.Line
 |> Chart.Show
 

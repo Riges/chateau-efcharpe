@@ -36,7 +36,7 @@ let x = 1 + 2
 
 // [TODO] compute y = x + 1
 
-
+let compute y = x + 1
 
 (*
 Step 1: using the CSV Type Provider to read data.
@@ -118,6 +118,11 @@ let exampleWine = redWines |> Seq.item 10
 // we have now typed access to wine properties
 printfn "Wine quality: %.2f" exampleWine.Quality
 
+let redWineQulities = 
+    redWines 
+    // for each row/wine, extract the quality
+    |> Seq.map (fun wine -> wine.Quality)
+
 // we can extract specific pieces of information
 let averageQuality =
     redWines 
@@ -130,11 +135,20 @@ let averageQuality =
 // [TODO] how many wines do we have in the sample?
 // Hint: Seq.min, Seq.max, Seq.length might help
 
-let minQuality = System.Double.NaN
+let minQuality = 
+    redWineQulities
+    // compute the sequence average
+    |> Seq.min
 
-let maxQuality = System.Double.NaN
+let maxQuality = 
+    redWineQulities
+    // compute the sequence average
+    |> Seq.max
 
-let sampleSize = System.Int32.MaxValue
+let sampleSize = 
+    redWineQulities
+    // compute the sequence average
+    |> Seq.length
 
 
 
@@ -233,3 +247,20 @@ redWines
 // one would you select?
 
 
+redWines
+|> Seq.map (fun wine -> wine.Alcohol, wine.Quality)
+|> Chart.Scatter
+|> Chart.WithOptions options
+|> Chart.Show
+
+redWines
+|> Seq.map (fun wine -> wine.Sulphates, wine.Quality)
+|> Chart.Scatter
+|> Chart.WithOptions options
+|> Chart.Show
+
+redWines
+|> Seq.map (fun wine -> wine.``Volatile acidity``, wine.Quality)
+|> Chart.Scatter
+|> Chart.WithOptions options
+|> Chart.Show
